@@ -6,11 +6,20 @@ firebase.initializeApp(require('./firebase.config.json'));
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-let query = db.collection('operations');
-query.get().then(function(snap) {
-    let data = snap.docs.map(x => JSON.stringify(x.data()) );
-    fs.writeFile('./backup.operations.json', data.join('\n'), (err) => {
-        if (err) console.error(err);
-        else console.log(data.length + ' records written.')
+const queries = {
+    'operations': db.collection('operations'),
+    'members': db.collection('members'),
+    'relations': db.collection('relations'),
+    'user_data': db.collection('user_data')
+};
+
+Object.entries(queries).forEach((nmQry) => {
+    let [name, query] = nmQry;
+    query.get().then(function(snap) {
+        let data = snap.docs.map(x => JSON.stringify(x.data()) );
+        fs.writeFile('./backup.' + name + '.json', data.join('\n'), (err) => {
+            if (err) console.error(err);
+            else console.log(data.length + ' records written for ' + name + '.')
+        });
     });
 });
